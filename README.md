@@ -39,6 +39,19 @@ The engagement configuration drives all hunting phases: surface enumeration, pri
 
 See `scripts/setup.sh` for environment initialization.
 
+### Sandbox prerequisite
+
+The sandboxed execution harness (`scripts/sandbox.sh`) uses `bwrap`. On most Linux systems this requires unprivileged user namespaces to be enabled:
+
+```bash
+# verify
+sysctl kernel.unprivileged_userns_clone   # should be 1
+# enable if not (requires root, survives reboot via sysctl.d)
+sudo sysctl -w kernel.unprivileged_userns_clone=1
+```
+
+Systems where user namespaces are disabled will fail the sandbox containment checks; all other functionality remains available.
+
 ## Attribution
 
 Vulnhunter builds on staged-validation, JSON-artifact-handoff, sandboxing, and attack-surface-mapping patterns from [RAPTOR](https://github.com/gadievron/raptor) (MIT license). Credit to gadievron for research infrastructure design.
