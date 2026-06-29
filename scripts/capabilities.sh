@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -u
 OUT="capabilities.json"
-[ "${1:-}" = "--out" ] && OUT="${2:?}"
+[ "${1:-}" = "--out" ] && OUT="${2:-capabilities.json}"
 # qemu probed across common arch suffixes; analyzeHeadless implies ghidra headless.
 declare -A PROBE=(
   [pyghidra]=pyghidra [ghidra]=ghidra [gdb]=gdb [radare2]=radare2
@@ -16,5 +16,6 @@ probe_qemu(){ local key="$1" pat="$2" p=""; for c in $pat; do p="$(command -v "$
   printf ','; probe_qemu qemu_user "qemu-arm-static qemu-arm qemu-mipsel qemu-mips qemu-aarch64"
   printf ','; probe_qemu qemu_system "qemu-system-arm qemu-system-aarch64 qemu-system-mips qemu-system-mipsel"
   printf '}'
-} | jq -S . > "$OUT"
+} > "$OUT.tmp"
+if command -v jq >/dev/null 2>&1; then jq -S . "$OUT.tmp" > "$OUT" && rm -f "$OUT.tmp"; else mv "$OUT.tmp" "$OUT"; fi
 echo "wrote $OUT"
