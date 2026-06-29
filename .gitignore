@@ -1,3 +1,4 @@
 vulnhunter-runs/
+.superpowers/
 *.tmp
 __pycache__/
