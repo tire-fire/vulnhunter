@@ -1,0 +1,15 @@
+# Engagement scope. Required for any active/dynamic testing.
+program: ""                 # program/handle, e.g. acme-bbp
+authorized_by: ""           # who authorized; keep proof out-of-band
+in_scope:                   # hosts, CIDRs, or domain globs
+  - "example.com"
+  - "*.api.example.com"
+  - "10.0.0.0/24"
+out_of_scope:
+  - "*.corp.example.com"
+rate_limit_rps: 5
+rules:
+  - "no-dos"
+  - "no-data-exfiltration"
+  - "no-lateral-movement"
+notes: ""
