@@ -8,7 +8,7 @@ user-invocable: false
 
 Validates a candidate vulnerability through a staged gauntlet and produces a schema-valid `finding-*.json`. Input: `candidate-*.json` matching `references/schemas/candidate.schema.json`. Output: `finding-*.json` matching `references/schemas/finding.schema.json` with status `confirmed`, `exploitable`, or `ruled_out`.
 
-All PoC execution runs through `scripts/sandbox.sh <workspace> -- <cmd>`. Finding output is validated with `scripts/validate-artifact.sh finding <file>`. On confirmation, call the `vuln-taxonomy` skill to assign `cwe`, `attack_techniques`, and `cvss`.
+All PoC execution runs through `scripts/sandbox.sh <workspace> -- <cmd>`. Finding output is validated with `scripts/validate-artifact.sh finding <file>`. When Stage A confirms a genuine weakness, call the `vuln-taxonomy` skill to assign `cwe`, `attack_techniques`, and `cvss` — regardless of whether the final status becomes `confirmed` or `exploitable`.
 
 See `skills/finding-validation/stages.md` for entry/exit criteria, gate assignments, and artifacts per stage.
 

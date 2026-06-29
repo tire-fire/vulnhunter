@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "finding",
   "type": "object",
-  "required": ["id","title","status","severity","cwe","attack_techniques","cvss","asset","summary","evidence"],
+  "required": ["id","title","status","asset","summary"],
   "additionalProperties": false,
   "properties": {
     "id": {"type":"string"},
@@ -19,5 +19,11 @@
     "reproduction": {"type":"array","items":{"type":"string"}},
     "remediation": {"type":"string"},
     "chain_id": {"type":"string"}
-  }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "status": { "enum": ["confirmed","exploitable"] } }, "required": ["status"] },
+      "then": { "required": ["severity","cwe","attack_techniques","cvss","evidence"] }
+    }
+  ]
 }

@@ -27,7 +27,7 @@ Output schema: `references/schemas/finding.schema.json`
 
 **Exit criteria (pass):** Asset and all cited code/config locations are confirmed present.
 
-**Exit criteria (fail):** Asset is missing, path is wrong, or the cited function/config key does not exist in the asset → set `status: ruled_out`, record reason in `summary`, write `finding-*.json`, stop.
+**Exit criteria (fail):** Asset is missing, path is wrong, or the cited function/config key does not exist in the asset → set `status: ruled_out`, record reason in `summary`, write `finding-*.json`, stop. The written `finding-*.json` is schema-valid under the conditional schema: it carries only the base-required fields (`id`, `title`, `status: ruled_out`, `asset`, `summary`). No rich fields (cwe, evidence, cvss, etc.) are required or emitted for `ruled_out`. Run `scripts/validate-artifact.sh finding finding-<id>.json` to confirm validity before stopping.
 
 **Gates enforced:** PROOF (asset existence is the first proof requirement), NO-HEDGING (unverifiable asset references are resolved or ruled out here).
 
@@ -53,7 +53,7 @@ Output schema: `references/schemas/finding.schema.json`
 
 **Gates enforced:** NO-HEDGING (a "possible" CWE must be verified against the actual code construct), PROOF (the specific vulnerable construct must be named, not inferred).
 
-**Artifacts written:** `cwe` (via vuln-taxonomy), `attack_techniques` (via vuln-taxonomy), partial `cvss` (via vuln-taxonomy), `severity` drafted from CVSS score.
+**Artifacts written:** `cwe` (via vuln-taxonomy), `attack_techniques` (via vuln-taxonomy), partial `cvss` (via vuln-taxonomy), `severity` drafted from CVSS score. Additionally, write the first `evidence` entry at this stage: a string citing the specific code location or config path of the weakness (e.g., `"use-after-free at src/foo.c:42"` or `"world-writable config at /etc/app/service.conf"`). This Stage A code-location entry ensures that a `confirmed` or `exploitable` finding always satisfies `evidence` minItems 1 even when Stage C achieves no observable PoC effect.
 
 ---
 
@@ -102,9 +102,9 @@ Output schema: `references/schemas/finding.schema.json`
 
 **Exit criteria (pass):** An observable effect is recorded in `evidence`; execution path from entry point to weakness is demonstrated.
 
-**Exit criteria (partial):** Path exists but PoC produces no observable effect within engagement constraints → `status: confirmed` (not `exploitable`).
+**Exit criteria (partial):** Path exists but PoC produces no observable effect within engagement constraints → `status: confirmed` (not `exploitable`). The Stage A code-location evidence entry satisfies the `evidence` minItems 1 requirement when no PoC effect is achievable.
 
-**Exit criteria (fail):** No path from any entry point reaches the vulnerable construct → `status: confirmed` or `status: ruled_out` depending on Stage A findings.
+**Exit criteria (fail):** No path from any entry point reaches the vulnerable construct → `status: confirmed` or `status: ruled_out` depending on Stage A findings. The Stage A code-location evidence entry satisfies the `evidence` minItems 1 requirement when no PoC effect is achievable.
 
 **Gates enforced:** POC-EVIDENCE (observable effect required), REACHABILITY-GATE (path from entry point must be demonstrated to reach `exploitable`).
 
@@ -116,7 +116,7 @@ Output schema: `references/schemas/finding.schema.json`
 
 **Purpose:** Assign the terminal `status` value based on the cumulative results of Stages 0–C.
 
-**Entry criteria:** Stages 0, A, B, C each have a recorded outcome (pass, partial, or fail).
+**Entry criteria:** Stages 0, A, B, C each have a recorded outcome (pass, partial, fail, or N/A if not reached due to an earlier failure).
 
 **Decision table:**
 
