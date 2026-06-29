@@ -8,9 +8,9 @@ Firmware extraction, surface enumeration, and attack-surface.json population.
 FIRMWARE=/path/to/firmware.bin
 WORKDIR=/tmp/fw-extract
 
-binwalk -e --extract --directory "$WORKDIR" "$FIRMWARE"
+binwalk -e --directory "$WORKDIR" "$FIRMWARE"
 # Recurse into nested archives (common in firmware)
-binwalk -Me --extract --directory "$WORKDIR" "$FIRMWARE"
+binwalk -Me --directory "$WORKDIR" "$FIRMWARE"
 ```
 
 ## Locate root filesystem

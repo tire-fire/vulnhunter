@@ -25,12 +25,11 @@ BIN=/path/to/target.elf
 
 ```python
 #!/usr/bin/env python3
-# Run with: ~/.local/bin/pyghidra /path/to/target.elf dump_info.py
+# Run with: ~/.local/bin/pyghidra dump_info.py /path/to/target.elf
 import pyghidra
 import json, sys
 
-def run(flat_api):
-    program = flat_api.getCurrentProgram()
+def run(flat_api, program):
     em = program.getExternalManager()
     sym_table = program.getSymbolTable()
     listing = program.getListing()
@@ -60,20 +59,22 @@ def run(flat_api):
 
     print(json.dumps(results, indent=2))
 
-pyghidra.run_script(sys.argv[1], run)
+pyghidra.start()
+with pyghidra.open_program(sys.argv[1]) as flat_api:
+    program = flat_api.getCurrentProgram()
+    run(flat_api, program)
 ```
 
 ## Dangerous-sink call finder
 
 ```python
 #!/usr/bin/env python3
-# Run with: ~/.local/bin/pyghidra /path/to/target.elf find_sinks.py
+# Run with: ~/.local/bin/pyghidra find_sinks.py /path/to/target.elf
 import pyghidra, json, sys
 
 SINKS = {"strcpy", "strncpy", "memcpy", "memmove", "system", "sprintf", "snprintf", "popen", "gets"}
 
-def run(flat_api):
-    program = flat_api.getCurrentProgram()
+def run(flat_api, program):
     sym_table = program.getSymbolTable()
     refs = program.getReferenceManager()
     findings = []
@@ -87,7 +88,10 @@ def run(flat_api):
 
     print(json.dumps(findings, indent=2))
 
-pyghidra.run_script(sys.argv[1], run)
+pyghidra.start()
+with pyghidra.open_program(sys.argv[1]) as flat_api:
+    program = flat_api.getCurrentProgram()
+    run(flat_api, program)
 ```
 
 ## Emit candidate JSON

@@ -77,9 +77,13 @@ r2 -A -q -c "/R" "$BIN" 2>/dev/null | head -100
 
 # Search for specific gadget type (pop; ret)
 r2 -A -q -c "/R pop" "$BIN" 2>/dev/null
+```
 
+```python
 # Via r2pipe
-r2 = r2pipe.open("$BIN", flags=["-2", "-A"])
+import r2pipe, sys
+
+r2 = r2pipe.open(sys.argv[1], flags=["-2", "-A"])
 r2.cmd("aaa")
 gadgets = r2.cmd("/R")
 print(gadgets)

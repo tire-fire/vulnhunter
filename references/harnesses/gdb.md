@@ -27,12 +27,17 @@ gdb --batch \
   -ex "handle SIGSEGV stop print" \
   -ex "handle SIGABRT stop print" \
   -ex "run < $INPUT" \
-  -ex "printf \"PC=%s\n\", (void*)\$pc" \
-  -ex "printf \"FAULT_ADDR=%s\n\", (void*)\$cr2" \
+  -ex "printf \"PC=%p\n\", (void*)\$pc" \
+  -ex "printf \"FAULT_ADDR=%p\n\", (void*)\$_siginfo._sifields._sigfault.si_addr" \
   -ex "bt full" \
   -ex "info registers" \
   "$BIN" 2>&1 | tee /tmp/crash_evidence.txt
 ```
+
+Note: `$_siginfo._sifields._sigfault.si_addr` is portable across x86, ARM, and MIPS;
+the CR2 register (x86-only) only captures page-fault addresses on that arch. Use `%p`
+to print the pointer value without dereferencing it — a string format specifier would
+fault if the program counter points to unmapped memory.
 
 ## Attach to a running or QEMU-emulated process
 

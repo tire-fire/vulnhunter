@@ -18,7 +18,7 @@ fi
 ## Spawn a process and hook a function
 
 ```bash
-frida -l hook_strcpy.js /path/to/target -- arg1 arg2
+frida -f /path/to/target -l hook_strcpy.js -- arg1 arg2
 ```
 
 ```javascript
@@ -65,15 +65,24 @@ SINKS.forEach(function(name) {
 frida -f /path/to/target --no-pause -l trace_sinks.js -- --arg1 2>&1 | tee /tmp/frida_trace.txt
 ```
 
-## Frida script for QEMU-user processes
+## QEMU-emulated firmware targets
 
-When the target runs under qemu-user (see `references/harnesses/qemu.md`):
+Frida instruments natively-running binaries and on-device targets. When a binary
+runs under `qemu-user` emulation, Frida attached to the qemu host process hooks
+qemu's own libc — not the emulated guest's calls — because guest code runs through
+TCG translation, not native execution. Use gdb via the qemu gdbstub instead:
 
 ```bash
-# qemu-arm exposes itself as a local process; attach by PID
-PID=$(pgrep -n qemu-arm)
-frida -p "$PID" -l trace_sinks.js
+# Start target under qemu with gdb stub on port 1234 (see references/harnesses/qemu.md)
+# Then attach from gdb:
+gdb-multiarch /path/to/target.elf \
+  -ex "set pagination off" \
+  -ex "target remote :1234" \
+  -ex "continue"
 ```
+
+See `references/harnesses/qemu.md` and `references/harnesses/gdb.md` for the full
+workflow (scripts/sandbox.sh wraps `qemu-... -g <port>`).
 
 ## Parse trace output for candidate evidence
 
@@ -100,7 +109,10 @@ gdb --batch \
   -ex "set pagination off" \
   -ex "set confirm off" \
   -ex "break strcpy" \
-  -ex "commands 1\nprintf \"strcpy src=%s\\n\", (char*)\$rsi\ncontinue\nend" \
+  -ex "commands 1" \
+  -ex "printf \"strcpy src=%s\\n\", (char*)\$rsi" \
+  -ex "continue" \
+  -ex "end" \
   -ex "run < /path/to/input" \
   "$BIN" 2>&1 | head -80
 ```
