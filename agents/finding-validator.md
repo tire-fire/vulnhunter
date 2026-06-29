@@ -57,7 +57,7 @@ These gates apply throughout every stage. A violation at any point stops forward
 
 **Pass:** At least one CWE assigned; `cwe` array populated matching `^CWE-[0-9]+$`; `vuln-taxonomy` fields written → advance to Stage B.
 
-**Fail:** No applicable CWE; pattern is not a genuine weakness → `status: ruled_out`; write and validate `finding-<id>.json`; stop.
+**Fail:** No applicable CWE; pattern is not a genuine weakness → set `status: ruled_out`, populate `summary` with the specific reason, write `finding-<id>.json` with only the base-required fields (`id`, `title`, `status: ruled_out`, `asset`, `summary`) — do not include `cwe`, `attack_techniques`, `cvss`, or `evidence` even if partially populated in working state — run `scripts/validate-artifact.sh finding finding-<id>.json`, confirm `VALID`, then stop and return the finding path with verdict `ruled_out` and a one-line justification.
 
 ---
 
@@ -77,7 +77,7 @@ These gates apply throughout every stage. A violation at any point stops forward
 
 **Pass:** Preconditions documented; attack chain sketched; no precondition is provably impossible within scope → advance to Stage C.
 
-**Fail:** A required precondition is provably unachievable within scope, or required attacker position is out of scope → `status: ruled_out`; write and validate `finding-<id>.json`; stop.
+**Fail:** A required precondition is provably unachievable within scope, or required attacker position is out of scope → set `status: ruled_out`, populate `summary` with the specific reason, write `finding-<id>.json` with only the base-required fields (`id`, `title`, `status: ruled_out`, `asset`, `summary`) — do not include `cwe`, `attack_techniques`, `cvss`, or `evidence` even if populated in Stage A — run `scripts/validate-artifact.sh finding finding-<id>.json`, confirm `VALID`, then stop and return the finding path with verdict `ruled_out` and a one-line justification.
 
 ---
 
@@ -96,7 +96,7 @@ These gates apply throughout every stage. A violation at any point stops forward
 6. If no execution path from any entry point reaches the vulnerable construct, set `status: confirmed` (weakness is real; reachability unproven within scope). The Stage A code-location evidence entry satisfies `evidence` minItems 1.
 7. Complete the `reproduction` array with the full step-by-step execution path demonstrated.
 
-**Pass:** Observable effect recorded in `evidence`; execution path demonstrated → advance to Stage D with candidate status `exploitable`.
+**Pass:** Observable effect recorded in `evidence`; execution path demonstrated → advance to Stage D with provisional candidate status `exploitable`. This label is provisional; Stage D's decision table is the authoritative ruling stage and must confirm the status — do not treat this label as terminal or skip Stage D.
 
 **Partial:** Path exists but no observable effect within engagement constraints → advance to Stage D with candidate status `confirmed`.
 
@@ -168,13 +168,13 @@ Set the `status` field. Complete the `summary` field with a clear description of
 
 3. **Required-field audit for `confirmed`/`exploitable` findings:** Confirm `id`, `title`, `status`, `severity`, `cwe` (minItems 1), `attack_techniques`, `cvss`, `asset`, `summary`, and `evidence` (minItems 1) are all populated and non-empty. The `vuln-taxonomy` skill (called in Stage A) produces `cwe`, `attack_techniques`, and `cvss`. The `evidence` array must contain at least the Stage A code-location entry.
 
-4. **Validate the output file:**
+4. **Write the draft `finding-<id>.json`** with all fields populated from the preceding stages.
+
+5. **Validate the draft:**
    ```bash
    scripts/validate-artifact.sh finding finding-<id>.json
    ```
-   The script must print `VALID` and exit 0. Fix any `INVALID:` lines before emitting the finding. The `finding.schema.json` conditional requires `severity`, `cwe`, `attack_techniques`, `cvss`, and `evidence` only when `status` is `confirmed` or `exploitable`; `ruled_out` requires only `id`, `title`, `status`, `asset`, and `summary`.
-
-5. Write the validated `finding-<id>.json`.
+   The script must print `VALID` and exit 0. If any `INVALID:` lines appear, fix the file in place and re-validate until the output is `VALID`. The `finding.schema.json` conditional requires `severity`, `cwe`, `attack_techniques`, `cvss`, and `evidence` only when `status` is `confirmed` or `exploitable`; `ruled_out` requires only `id`, `title`, `status`, `asset`, and `summary`. Emit and finalize the finding only once validation passes.
 
 ---
 
