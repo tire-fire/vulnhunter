@@ -29,7 +29,14 @@ The target speaks a protocol the agent cannot decode from the binary or packet c
 - Whether a public parser implementation or Wireshark dissector exists
 - Known vulnerabilities in similar implementations
 
-### 4. Sink with No Known CWE Mapping
+### 4. Unknown Application or Web Framework
+
+The target application is built on an application framework or web framework the agent does not recognize (e.g., a proprietary embedded web server, an obscure IoT management framework, a vendor-specific API gateway). Research is needed to determine:
+- Framework-specific routing, template rendering, or deserialization behaviors that introduce attack surface
+- Known vulnerability classes associated with that framework (e.g., mass-assignment, SSTI, framework-specific auth bypass patterns)
+- Whether public CVEs or security advisories exist for the framework version in use
+
+### 5. Sink with No Known CWE Mapping
 
 A data flow reaches a function or system call that:
 - Has no directly applicable entry in `references/attack-taxonomy.md`, and
@@ -37,7 +44,7 @@ A data flow reaches a function or system call that:
 
 Examples: a cryptographic API misuse that is not simple key hardcoding, a hardware register write path, a custom memory allocator with novel overflow semantics, a deserialization sink in an unfamiliar serialization format (ASN.1, MessagePack, CBOR with custom schema).
 
-### 5. Primitive That Appears Novel
+### 6. Primitive That Appears Novel
 
 A code pattern is observed that may represent a new vulnerability class or exploitation primitive not documented in public literature. Before assigning it a CWE and technique, research is required to determine whether it has been described before and what existing work applies.
 

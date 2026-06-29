@@ -71,7 +71,8 @@ Assign the **most specific** applicable CWE. If a finding is a stack buffer over
 
 | CWE(s) | Most Likely Enterprise Technique(s) | Rationale |
 |---|---|---|
-| CWE-119, CWE-120, CWE-121, CWE-122, CWE-787, CWE-190 | T1203 (Exploitation for Client Execution) | Memory corruption used to gain code execution; T1203 covers exploitation of software vulnerabilities for execution |
+| CWE-119, CWE-120, CWE-121, CWE-122, CWE-787, CWE-190 — *network-reachable service (firmware HTTP/daemon, embedded parser, network daemon)* | T1190 (Exploit Public-Facing Application) | Memory corruption in a server-side process that accepts inbound network connections; the vulnerable service is the public-facing application being exploited |
+| CWE-119, CWE-120, CWE-121, CWE-122, CWE-787, CWE-190 — *client-side binary (PDF/document/media parser, browser plugin)* | T1203 (Exploitation for Client Execution) | Memory corruption triggered by a malicious file or content opened by a victim; exploitation requires client-side user action |
 | CWE-125 | T1005 (Data from Local System) | Out-of-bounds reads leak in-process data to the attacker |
 | CWE-78 | T1059.004 (Command and Scripting Interpreter: Unix Shell), T1059.003 (Windows Command Shell) | OS command injection directly invokes a shell interpreter |
 | CWE-89 | T1190 (Exploit Public-Facing Application) | SQLi is an application-layer exploit; may also enable T1005 if query results are returned |
@@ -81,7 +82,9 @@ Assign the **most specific** applicable CWE. If a finding is a stack buffer over
 | CWE-798 | T1552.001 (Unsecured Credentials: Credentials in Files) | Hardcoded credentials are a static credential stored in a file or binary |
 | CWE-22 | T1083 (File and Directory Discovery), T1005 (Data from Local System) | Path traversal enables directory listing (T1083) and then file exfiltration (T1005) |
 | CWE-434 | T1505.003 (Server Software Component: Web Shell) | Unrestricted upload commonly delivers a web shell enabling persistent execution |
-| CWE-918 | T1090 (Proxy), T1552.005 (Cloud Instance Metadata API) | SSRF turns the server into an internal proxy; against cloud targets it commonly reaches the IMDS endpoint for credential theft |
+| CWE-918 | T1090.001 (Internal Proxy — SSRF-as-internal-pivot; not C2 anonymization), T1552.005 (Cloud Instance Metadata API) | SSRF turns the server into an internal proxy reaching otherwise-inaccessible services; against cloud targets it commonly reaches the IMDS endpoint for credential theft |
+
+> **Memory-corruption technique selection:** use T1190 when the vulnerable component is a network-reachable server-side service; use T1203 when exploitation requires a victim to open attacker-supplied content in a client-side binary.
 
 ### ICS / OT ATT&CK Matrix (for firmware, PLC, SCADA, embedded targets)
 
@@ -89,7 +92,7 @@ Use ICS techniques (`T0xxx`) instead of or in addition to Enterprise techniques 
 
 | CWE(s) | ICS Technique(s) | Rationale |
 |---|---|---|
-| CWE-119, CWE-121, CWE-122, CWE-787 | T0853 (Scripting), T0839 (Module Firmware) | Memory corruption in firmware can be used to inject malicious firmware modules |
+| CWE-119, CWE-121, CWE-122, CWE-787 | T0839 (Module Firmware) | Memory corruption in firmware can be used to inject malicious firmware modules |
 | CWE-798 | T0812 (Default Credentials) | Hardcoded credentials in ICS devices are often factory-default style; T0812 is the ICS-matrix parallel |
 | CWE-306 | T0822 (External Remote Services) | Missing auth on a remote-accessible ICS service (Modbus, EtherNet/IP, OPC-UA) directly enables T0822 |
 | CWE-78 | T0853 (Scripting) | Command injection in device management interfaces enables script execution on the controller |

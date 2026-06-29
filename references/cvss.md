@@ -80,7 +80,7 @@ Vector string format: `CVSS:4.0/AV:<v>/AC:<v>/AT:<v>/PR:<v>/UI:<v>/VC:<v>/VI:<v>
 
 ## Worked Examples
 
-### Example 1 — Network RCE via heap buffer overflow in firmware HTTP parser
+### Example 1 — Network RCE via stack buffer overflow in firmware HTTP parser
 
 **Scenario:** A stack buffer overflow in the HTTP `Content-Length` parser of a router's web management interface, reachable over WAN, no authentication required, leads to arbitrary code execution as root. No mitigation (NX, ASLR) present on the target.
 
