@@ -1,0 +1,13 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema","title":"attack-surface","type":"object",
+  "required":["target","components","entry_points"],"additionalProperties":false,
+  "properties":{
+    "target":{"type":"string"},
+    "target_kind":{"enum":["firmware","network_host","local_binary","web_app"]},
+    "components":{"type":"array","items":{"type":"object","required":["name","kind"],"additionalProperties":true,
+      "properties":{"name":{"type":"string"},"kind":{"type":"string"},"path":{"type":"string"},"notes":{"type":"string"}}}},
+    "entry_points":{"type":"array","items":{"type":"object","required":["name","exposure"],"additionalProperties":true,
+      "properties":{"name":{"type":"string"},"exposure":{"enum":["network","local","physical","ipc"]},"sink":{"type":"string"}}}},
+    "trust_boundaries":{"type":"array","items":{"type":"string"}}
+  }
+}

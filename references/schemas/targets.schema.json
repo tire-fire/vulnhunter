@@ -1,0 +1,9 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema","title":"targets","type":"object",
+  "required":["queue"],"additionalProperties":false,
+  "properties":{"queue":{"type":"array","items":{"type":"object",
+    "required":["id","asset","assigned_chain","priority_score"],"additionalProperties":true,
+    "properties":{"id":{"type":"string"},"asset":{"type":"string"},
+      "assigned_chain":{"enum":["static-re","dynamic","web-proto"]},
+      "priority_score":{"type":"number"},"cwe_guess":{"type":"array","items":{"type":"string"}}}}}}
+}

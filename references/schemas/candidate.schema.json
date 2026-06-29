@@ -1,0 +1,14 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema","title":"candidate","type":"object",
+  "required":["id","source_chain","asset","hypothesis","cwe_guess"],"additionalProperties":false,
+  "properties":{
+    "id":{"type":"string"},
+    "source_chain":{"enum":["static-re","dynamic","web-proto"]},
+    "asset":{"type":"string"},
+    "hypothesis":{"type":"string"},
+    "cwe_guess":{"type":"array","items":{"type":"string","pattern":"^CWE-[0-9]+$"}},
+    "attack_technique_guess":{"type":"array","items":{"type":"string","pattern":"^T[0-9]{4}(\\.[0-9]{3})?$"}},
+    "evidence":{"type":"array","items":{"type":"string"}},
+    "priority_score":{"type":"number"}
+  }
+}

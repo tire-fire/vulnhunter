@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "finding",
+  "type": "object",
+  "required": ["id","title","status","severity","cwe","attack_techniques","cvss","asset","summary","evidence"],
+  "additionalProperties": false,
+  "properties": {
+    "id": {"type":"string"},
+    "title": {"type":"string"},
+    "status": {"enum":["confirmed","exploitable","ruled_out"]},
+    "severity": {"enum":["info","low","medium","high","critical"]},
+    "cwe": {"type":"array","items":{"type":"string","pattern":"^CWE-[0-9]+$"},"minItems":1},
+    "attack_techniques": {"type":"array","items":{"type":"string","pattern":"^T[0-9]{4}(\\.[0-9]{3})?$"}},
+    "cvss": {"type":"object","required":["version","vector","score"],"additionalProperties":false,
+      "properties":{"version":{"enum":["3.1","4.0"]},"vector":{"type":"string"},"score":{"type":"number","minimum":0,"maximum":10}}},
+    "asset": {"type":"string"},
+    "summary": {"type":"string"},
+    "evidence": {"type":"array","items":{"type":"string"},"minItems":1},
+    "reproduction": {"type":"array","items":{"type":"string"}},
+    "remediation": {"type":"string"},
+    "chain_id": {"type":"string"}
+  }
+}
