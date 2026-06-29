@@ -39,6 +39,7 @@ Assign the **most specific** applicable CWE. If a finding is a stack buffer over
 | CWE | Name | Assign when |
 |---|---|---|
 | CWE-78 | OS Command Injection | Attacker-controlled data is concatenated into a shell command string passed to `system()`, `popen()`, or equivalent |
+| CWE-94 | Code Injection (incl. SSTI) | Attacker-controlled input is interpreted AS CODE by an interpreter or template engine (server-side template injection, eval/exec of input, code-generating deserialization), yielding code execution — distinct from CWE-78, which requires a shell command string |
 | CWE-89 | SQL Injection | Attacker-controlled data is interpolated into a SQL query without parameterization |
 | CWE-79 | Cross-site Scripting (XSS) | Attacker-supplied HTML/JS is reflected or stored and rendered in a victim's browser without escaping |
 
@@ -75,6 +76,7 @@ Assign the **most specific** applicable CWE. If a finding is a stack buffer over
 | CWE-119, CWE-120, CWE-121, CWE-122, CWE-787, CWE-190 — *client-side binary (PDF/document/media parser, browser plugin)* | T1203 (Exploitation for Client Execution) | Memory corruption triggered by a malicious file or content opened by a victim; exploitation requires client-side user action |
 | CWE-125 | T1005 (Data from Local System) | Out-of-bounds reads leak in-process data to the attacker |
 | CWE-78 | T1059.004 (Command and Scripting Interpreter: Unix Shell), T1059.003 (Windows Command Shell) | OS command injection directly invokes a shell interpreter |
+| CWE-94 — *network-reachable web application* | T1190 (Exploit Public-Facing Application) | Code injection (SSTI, eval/exec) exploits the public-facing application's template or eval layer; execution is within the app process, not a shell |
 | CWE-89 | T1190 (Exploit Public-Facing Application) | SQLi is an application-layer exploit; may also enable T1005 if query results are returned |
 | CWE-79 | T1059.007 (JavaScript), T1185 (Browser Session Hijacking) | Stored/reflected XSS executes attacker JavaScript and can steal session cookies |
 | CWE-352 | T1185 (Browser Session Hijacking) | CSRF hijacks an authenticated browser session to perform actions as the victim |

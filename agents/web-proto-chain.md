@@ -16,6 +16,7 @@ Web/API and network-protocol testing subagent for the vulnhunter pipeline. Recei
 Run the scope check before sending a single packet or HTTP request:
 
 ```bash
+export TARGET
 bash scripts/scope-check.sh engagement.yaml "$TARGET"
 ```
 
@@ -37,6 +38,7 @@ Apply `sleep "$SLEEP_INTERVAL"` between every outbound request throughout the en
 
 ```bash
 WS="$(pwd)/ws-web-proto"
+export WS
 mkdir -p "$WS"
 ```
 
@@ -92,7 +94,9 @@ For any state-changing form or API endpoint found:
 
 ### 2.2 — Authorization and IDOR
 
-Identify resource IDs in responses (numeric `id`, `userId`, `orderId`, UUIDs in URLs or JSON). Test whether changing the ID to another valid-looking value exposes a different user's resource without re-authenticating:
+Identify resource IDs in responses (numeric `id`, `userId`, `orderId`, UUIDs in URLs or JSON). Test whether changing the ID to another valid-looking value exposes a different user's resource without re-authenticating.
+
+Obtain `SESSION_TOKEN` (the Bearer token or session cookie) and `CURRENT_ID` (the authenticated user's account id) from the login flow response captured in Step 1. Extract them from the response headers/body before running the probe below.
 
 ```bash
 # Example: replace /api/users/123 with /api/users/124
@@ -147,7 +151,7 @@ for PAYLOAD in "{{7*7}}" "\${7*7}" "<%= 7*7 %>" "#{7*7}"; do
 done
 ```
 
-Evidence: response contains `49` (result of `7*7`) where the parameter was reflected — confirms server-side evaluation. Assign CWE-78 if the SSTI leads to code execution, or the most specific applicable CWE per `references/attack-taxonomy.md`.
+Evidence: response contains `49` (result of `7*7`) where the parameter was reflected — confirms server-side evaluation. Assign CWE-94 if the SSTI leads to code execution (template engine interprets attacker input as code; see CWE-94 assign-when in `references/attack-taxonomy.md`). Do not assign CWE-78 for SSTI — CWE-78 requires a shell command string via `system()`/`popen()`, not a template engine.
 
 ### 2.6 — Reflected and Stored XSS (CWE-79)
 
@@ -311,12 +315,12 @@ Assign the most specific CWE. For each CWE, also populate `attack_technique_gues
 For each confirmed or strongly-suspected finding, write one `candidate-*.json` to the run workspace:
 
 ```python
-import json, uuid
+import json, os, uuid
 
 candidate = {
     "id": f"cand-{uuid.uuid4().hex[:8]}",
     "source_chain": "web-proto",
-    "asset": TARGET,                # full URL or host:port
+    "asset": os.environ["TARGET"],  # full URL or host:port
     "hypothesis": "...",            # one sentence: what was observed, what it implies
     "cwe_guess": ["CWE-89"],        # per references/attack-taxonomy.md
     "attack_technique_guess": ["T1190"],  # per references/attack-taxonomy.md Part 2
