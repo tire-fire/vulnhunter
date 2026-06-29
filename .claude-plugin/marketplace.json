@@ -1,0 +1,11 @@
+{
+  "name": "vulnhunter",
+  "owner": { "name": "Tirefire" },
+  "plugins": [
+    {
+      "name": "vulnhunter",
+      "source": "./",
+      "description": "Orchestrated firmware + live-target vulnerability hunting and bug-bounty reporting."
+    }
+  ]
+}

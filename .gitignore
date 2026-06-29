@@ -1,0 +1,3 @@
+vulnhunter-runs/
+*.tmp
+__pycache__/
