@@ -39,6 +39,10 @@ Static local-binary analysis (loading a file already in hand) and firmware extra
 
 **Rate limiting:** Read `rate_limit_rps` from `engagement.yaml` and honour it for all active network probing. Implement a sleep between requests: `sleep $(echo "scale=3; 1 / $RATE_LIMIT_RPS" | bc)`.
 
+```bash
+RATE_LIMIT_RPS=$(python3 -c "import yaml; d=yaml.safe_load(open('engagement.yaml')); print(d.get('rate_limit_rps',1))")
+```
+
 ---
 
 ## Step 1 — Read Capabilities
@@ -93,6 +97,7 @@ for PAYLOAD in "A$(python3 -c 'print(\"A\"*1024)')" "../../../etc/passwd" "' OR 
   scripts/sandbox.sh "$WS" -- \
     curl -sk --max-time 5 -o "$WS/fuzz_$(date +%s%N).txt" \
       "http://$TARGET_HOST:$TARGET_PORT/?input=$(python3 -c "import urllib.parse,sys; print(urllib.parse.quote(sys.argv[1]))" "$PAYLOAD")"
+  sleep "$(echo "scale=3; 1 / $RATE_LIMIT_RPS" | bc)"
 done
 ```
 
@@ -118,8 +123,10 @@ Record the crash-triggering payload and server response as `evidence` in the can
 Use `binwalk` (via `references/harnesses/binwalk.md`) or `unsquashfs` to extract the rootfs:
 
 ```bash
-ROOTFS="/tmp/fw-extract/_firmware.bin.extracted/squashfs-root"
-binwalk -e -C /tmp/fw-extract "$ASSET_PATH" 2>&1
+WS="$(pwd)/ws-qemu"
+mkdir -p "$WS"
+ROOTFS="$WS/fw-extract/_firmware.bin.extracted/squashfs-root"
+binwalk -e -C "$WS/fw-extract" "$ASSET_PATH" 2>&1
 ```
 
 Identify the target binary (typically `/sbin/httpd`, `/usr/sbin/lighttpd`, or a custom daemon) and its architecture:
@@ -192,6 +199,7 @@ for SIZE in 64 256 1024 4096 65535; do
   scripts/sandbox.sh "$WS" -- \
     python3 -c "import socket; s=socket.create_connection(('127.0.0.1',8080),5); s.sendall(b'A'*$SIZE); d=s.recv(256); print(repr(d))" \
     2>&1 | tee "$WS/fuzz_${SIZE}.txt"
+  sleep "$(echo "scale=3; 1 / $RATE_LIMIT_RPS" | bc)"
 done
 ```
 
@@ -227,16 +235,17 @@ For any crash observed during fuzzing or live debugging, capture the PoC-evidenc
 INPUT="$WS/crash_input.bin"
 python3 -c "import sys; sys.stdout.buffer.write(b'A'*4096)" > "$INPUT"
 
-gdb --batch \
-  -ex "set pagination off" \
-  -ex "handle SIGSEGV stop print" \
-  -ex "handle SIGABRT stop print" \
-  -ex "run < $INPUT" \
-  -ex "printf \"PC=%p\n\", (void*)\$pc" \
-  -ex "printf \"FAULT_ADDR=%p\n\", (void*)\$_siginfo._sifields._sigfault.si_addr" \
-  -ex "bt full" \
-  -ex "info registers" \
-  "$BIN" 2>&1 | tee "$WS/crash_evidence.txt"
+scripts/sandbox.sh "$WS" -- \
+  gdb --batch \
+    -ex "set pagination off" \
+    -ex "handle SIGSEGV stop print" \
+    -ex "handle SIGABRT stop print" \
+    -ex "run < $INPUT" \
+    -ex "printf \"PC=%p\n\", (void*)\$pc" \
+    -ex "printf \"FAULT_ADDR=%p\n\", (void*)\$_siginfo._sifields._sigfault.si_addr" \
+    -ex "bt full" \
+    -ex "info registers" \
+    "$BIN" 2>&1 | tee "$WS/crash_evidence.txt"
 ```
 
 Extract evidence fields from the crash log:
