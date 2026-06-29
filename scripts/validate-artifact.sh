@@ -9,7 +9,7 @@ uv run --quiet --with jsonschema python - "$SCHEMA" "$FILE" <<'PY'
 import json,sys
 from jsonschema import Draft202012Validator
 schema=json.load(open(sys.argv[1])); data=json.load(open(sys.argv[2]))
-errs=sorted(Draft202012Validator(schema).iter_errors(data), key=lambda e:e.path)
+errs=sorted(Draft202012Validator(schema).iter_errors(data), key=lambda e:list(e.path))
 if errs:
     for e in errs: print("INVALID:", "/".join(map(str,e.path)) or "<root>", e.message)
     sys.exit(2)
