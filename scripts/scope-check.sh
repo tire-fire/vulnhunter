@@ -5,9 +5,15 @@ ENG="${1:?engagement file}"; TARGET="${2:?target}"
 
 # Parse simple YAML list under a key into newline-separated values (quotes stripped).
 list_under(){ awk -v key="$1:" '
-  $0 ~ "^"key"[ \t]*$" {inblk=1; next}
+  $0 ~ "^"key"[ \t]*(#.*)?$" {inblk=1; next}
   inblk && /^[A-Za-z_]/ {inblk=0}
-  inblk && /^[ \t]*-/ { sub(/^[ \t]*-[ \t]*/,""); gsub(/^"|"$/,""); print }
+  inblk && /^[ \t]*-/ {
+    sub(/^[ \t]*-[ \t]*/,"")
+    sub(/[ \t]+#.*$/,"")
+    gsub(/^[ \t]+|[ \t]+$/,"")
+    gsub(/^"|"$/,""); gsub(/^'"'"'|'"'"'$/,"")
+    if (length($0)) print
+  }
 ' "$ENG"; }
 
 ip_to_int(){ local IFS=.; read -r a b c d <<EOF
@@ -17,6 +23,7 @@ echo $(( (a<<24)+(b<<16)+(c<<8)+d )); }
 
 ip_in_cidr(){ local ip="$1" cidr="$2" net mask bits ipi neti
   net="${cidr%/*}"; bits="${cidr#*/}"
+  case "$bits" in ''|*[!0-9]*) return 1;; esac; [ "$bits" -gt 32 ] && return 1
   case "$ip" in *[!0-9.]*|"") return 1;; esac
   case "$net" in *[!0-9.]*|"") return 1;; esac
   ipi="$(ip_to_int "$ip")"; neti="$(ip_to_int "$net")"
