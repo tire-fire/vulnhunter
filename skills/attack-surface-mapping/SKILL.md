@@ -146,8 +146,10 @@ Only proceed if exit code is 0 (IN_SCOPE). If exit code is 2, stop — target is
 **Step 1 — Port and protocol enumeration**
 
 ```bash
+ENGAGEMENT_FILE="<path-to-engagement.yaml>"
+
 # Scope check first
-scripts/scope-check.sh engagement.yaml "$TARGET" || exit 1
+scripts/scope-check.sh "$ENGAGEMENT_FILE" "$TARGET" || exit 1
 
 # TCP port scan
 nmap -sV -p- --open -oX nmap-tcp.xml "$TARGET"
@@ -161,7 +163,7 @@ For each discovered port, record a component (`kind: service`) and entry point (
 **Step 2 — Web endpoint enumeration (web_app only)**
 
 ```bash
-scripts/scope-check.sh engagement.yaml "$TARGET" || exit 1
+scripts/scope-check.sh "$ENGAGEMENT_FILE" "$TARGET" || exit 1
 
 # Directory/endpoint discovery
 ffuf -u "http://$TARGET/FUZZ" -w /usr/share/wordlists/dirb/common.txt -o ffuf-out.json
@@ -196,6 +198,25 @@ attack_surface = {
 
 with open("attack-surface.json", "w") as f:
     json.dump(attack_surface, f, indent=2)
+```
+
+For `target_kind: "web_app"`, use HTTP-specific components and endpoint entry_points:
+
+```json
+{
+  "target": "api.example.com",
+  "target_kind": "web_app",
+  "components": [
+    {"name": "nginx", "kind": "web-server", "notes": "Reverse proxy, TLS termination on :443"},
+    {"name": "REST API /api/v1", "kind": "http-endpoint", "notes": "JWT-authenticated JSON API"}
+  ],
+  "entry_points": [
+    {"name": "POST /api/v1/login", "exposure": "network", "sink": "auth handler"},
+    {"name": "GET /api/v1/users/{id}", "exposure": "network"},
+    {"name": "POST /api/v1/upload", "exposure": "network", "sink": "file write handler"}
+  ],
+  "trust_boundaries": ["external internet", "internal API backend"]
+}
 ```
 
 ---
