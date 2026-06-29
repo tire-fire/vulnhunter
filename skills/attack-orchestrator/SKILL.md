@@ -19,7 +19,8 @@ End-to-end lifecycle orchestrator for firmware and live-target vulnerability dis
 
 **Setup:**
 ```bash
-PROGRAM=$(grep '^program:' engagement.yaml | awk '{print $2}')
+PROGRAM=$(grep '^program:' engagement.yaml | awk '{print $2}' | tr -d '"')
+PROGRAM="${PROGRAM:-run}"
 RUN_ID=$(date +%Y%m%d-%H%M%S)
 WS="vulnhunter-runs/${PROGRAM}/${RUN_ID}"
 mkdir -p "$WS"

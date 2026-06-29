@@ -8,6 +8,8 @@ scripts/sandbox.sh <workspace_dir> -- <qemu_command>
 ```
 This enforces CPU/RAM/filesystem limits and network isolation via bwrap or unshare.
 
+**Network mode for emulated services:** An emulated service that exposes a port via hostfwd (e.g., `hostfwd=tcp:127.0.0.1:8080-:80`) and any client or fuzzer that connects to it **must both** run under `SANDBOX_ALLOW_NET=1` so they share the host loopback. Without it each `sandbox.sh` call runs in a separate network namespace and `127.0.0.1:PORT` is unreachable from the other side. Use `SANDBOX_ALLOW_NET=0` (the default) only for pure file-input execution where no network I/O is needed.
+
 ## qemu-user: Run a single ELF against a firmware rootfs
 
 ```bash

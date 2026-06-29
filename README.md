@@ -18,13 +18,15 @@ claude plugin install vulnhunter@vulnhunter
 
 ## Usage
 
-Vulnhunter requires an `engagement.yaml` configuration file that describes the target scope, vulnerability preferences, and reporting options. The orchestrator is invoked via its skill:
+Vulnhunter requires an `engagement.yaml` configuration file that describes the target scope, vulnerability preferences, and reporting options.
 
-```bash
-claude vulnhunter
-```
+The orchestrator is invoked via the `attack-orchestrator` skill — ask Claude to run it and supply the path to your engagement file and target:
 
-The engagement configuration drives all hunting phases: surface enumeration, prioritization, chain dispatch, validation, and report generation.
+> "Run the attack-orchestrator skill with engagement.yaml and target firmware.bin"
+
+Or invoke it directly in Claude Code via the Skill tool with the `attack-orchestrator` skill name. The engagement configuration drives all hunting phases: surface enumeration, prioritization, chain dispatch, validation, and report generation.
+
+**Note:** The `claude plugin marketplace add` path in the install section is an example. Replace `/home/tirefire/vulnhunter` with the actual path of your clone.
 
 ## Tooling
 

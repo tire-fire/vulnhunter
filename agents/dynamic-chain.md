@@ -76,15 +76,15 @@ After passing the scope check:
 WS="$(pwd)/ws-network"
 mkdir -p "$WS"
 
-# TCP banner grab (sandboxed; network isolation disabled for live probing)
-scripts/sandbox.sh "$WS" -- \
+# TCP banner grab — SANDBOX_ALLOW_NET=1 required to reach the live target.
+SANDBOX_ALLOW_NET=1 scripts/sandbox.sh "$WS" -- \
   bash -c "echo '' | nc -w 5 $TARGET_HOST $TARGET_PORT 2>&1 | head -20 | tee $WS/banner.txt"
 ```
 
 For HTTP services, capture headers and a sample response body:
 
 ```bash
-scripts/sandbox.sh "$WS" -- \
+SANDBOX_ALLOW_NET=1 scripts/sandbox.sh "$WS" -- \
   curl -sk -D "$WS/headers.txt" -o "$WS/body.html" --max-time 10 "http://$TARGET_HOST:$TARGET_PORT/"
 ```
 
@@ -94,7 +94,8 @@ Fuzz discovered parameters with a minimal set of boundary payloads. All fuzzing 
 
 ```bash
 for PAYLOAD in "A$(python3 -c 'print(\"A\"*1024)')" "../../../etc/passwd" "' OR '1'='1" "<script>x</script>" "%00" "$(printf '%s' 'a\x00b')"; do
-  scripts/sandbox.sh "$WS" -- \
+  # SANDBOX_ALLOW_NET=1 required: fuzz traffic must reach the live target host.
+  SANDBOX_ALLOW_NET=1 scripts/sandbox.sh "$WS" -- \
     curl -sk --max-time 5 -o "$WS/fuzz_$(date +%s%N).txt" \
       "http://$TARGET_HOST:$TARGET_PORT/?input=$(python3 -c "import urllib.parse,sys; print(urllib.parse.quote(sys.argv[1]))" "$PAYLOAD")"
   sleep "$(echo "scale=3; 1 / $RATE_LIMIT_RPS" | bc)"
@@ -108,7 +109,8 @@ Analyze responses for signs of memory corruption (crash/500 error after oversize
 If a 500 error or connection reset correlates with an oversized or injection payload, attempt to reproduce with a minimal PoC that confirms the crash is input-driven:
 
 ```bash
-scripts/sandbox.sh "$WS" -- \
+# SANDBOX_ALLOW_NET=1 required: crash-repro connects to the live target host.
+SANDBOX_ALLOW_NET=1 scripts/sandbox.sh "$WS" -- \
   bash -c "python3 -c \"import socket; s=socket.create_connection(('$TARGET_HOST',$TARGET_PORT),5); s.sendall(b'A'*4096); print(s.recv(256))\" 2>&1 | tee $WS/crash_repro.txt"
 ```
 
@@ -162,7 +164,9 @@ mkdir -p "$WS"
 
 ARCH_BIN="qemu-arm"   # Replace with qemu-mips, qemu-aarch64, etc. per file(1) output
 
-scripts/sandbox.sh "$WS" -- \
+# SANDBOX_ALLOW_NET=1 required: qemu-user exposes the gdb stub on 127.0.0.1:1234
+# so gdb-multiarch (running on the host) can connect to it over loopback.
+SANDBOX_ALLOW_NET=1 scripts/sandbox.sh "$WS" -- \
   env QEMU_LD_PREFIX="$ROOTFS" "$ARCH_BIN" -g 1234 "$BIN" &
 QEMU_PID=$!
 sleep 2   # Allow stub to initialize
@@ -188,15 +192,18 @@ Note: Frida does not instrument qemu-user guest code (it hooks the host qemu pro
 If the binary exposes a network port (passed via `-p` flag or inferred from binary name), fuzz it through the sandbox. Use the wall-clock timeout override for slower boots:
 
 ```bash
-SANDBOX_WALL_TIMEOUT=600 scripts/sandbox.sh "$WS" -- \
+# SANDBOX_ALLOW_NET=1 required: the emulated service and the fuzzer client both
+# need to share the host loopback (127.0.0.1:8080). Without it each sandbox.sh
+# call gets a separate network namespace and the hostfwd port is unreachable.
+SANDBOX_ALLOW_NET=1 SANDBOX_WALL_TIMEOUT=600 scripts/sandbox.sh "$WS" -- \
   env QEMU_LD_PREFIX="$ROOTFS" "$ARCH_BIN" "$BIN" -p 8080 &
 
 # Wait for service to be ready
 sleep 3
 
-# Send boundary payloads
+# Send boundary payloads — fuzzer must also run with SANDBOX_ALLOW_NET=1.
 for SIZE in 64 256 1024 4096 65535; do
-  scripts/sandbox.sh "$WS" -- \
+  SANDBOX_ALLOW_NET=1 scripts/sandbox.sh "$WS" -- \
     python3 -c "import socket; s=socket.create_connection(('127.0.0.1',8080),5); s.sendall(b'A'*$SIZE); d=s.recv(256); print(repr(d))" \
     2>&1 | tee "$WS/fuzz_${SIZE}.txt"
   sleep "$(echo "scale=3; 1 / $RATE_LIMIT_RPS" | bc)"
@@ -212,7 +219,10 @@ IMAGE="$ASSET_PATH"
 WS_SYS="$(pwd)/ws-qemu-sys"
 mkdir -p "$WS_SYS"
 
-scripts/sandbox.sh "$WS_SYS" -- \
+# SANDBOX_ALLOW_NET=1 required: qemu-system exposes hostfwd ports on 127.0.0.1
+# (8080→:80, gdb stub :5555). Without it the host-side loopback is in a
+# separate network namespace and gdb/fuzzer cannot connect to those ports.
+SANDBOX_ALLOW_NET=1 scripts/sandbox.sh "$WS_SYS" -- \
   qemu-system-arm \
     -M versatilepb \
     -kernel "$IMAGE" \
@@ -376,6 +386,15 @@ python3 -c "import sys; sys.stdout.buffer.write(b'A'*256 + b'BBBB')" | \
       -ex "bt" \
       "$BIN" 2>&1 | tee "$WS/poc_confirm.txt"
 ```
+
+---
+
+## Network Mode Rule
+
+Use `SANDBOX_ALLOW_NET=1` only for steps that must do network I/O (live probing, emulated-service fuzzing); never for raw firmware/binary detonation.
+
+- **SANDBOX_ALLOW_NET=1:** Step 2A (banner grab, fuzz, crash-repro against live target), Step 2B.3 (qemu-user with gdb stub over loopback), Step 2B.4 (emulated-service fuzzing), Step 2B.5 (qemu-system with hostfwd).
+- **Default (network-isolated):** Step 2B.6 (crash triage gdb on a file input), Step 2C (local binary detonation and fuzzing). Containment matters most when executing untrusted binaries with no network requirement.
 
 ---
 

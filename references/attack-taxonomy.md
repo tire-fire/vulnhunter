@@ -104,7 +104,7 @@ Use ICS techniques (`T0xxx`) instead of or in addition to Enterprise techniques 
 | CWE-190 | T0836 (Modify Parameter) | Integer overflow in setpoint or parameter parsing can corrupt control parameters |
 | CWE-918 | T0883 (Internet Accessible Device) | SSRF against an ICS device can pivot to internally-networked PLCs that should not be internet-reachable |
 
-**Rule for firmware/PLC targets:** always check whether an ICS technique applies before defaulting to an Enterprise technique. Include both if both characterize the behavior (e.g., `["T1203","T0839"]`).
+**Rule for firmware/PLC targets:** always check whether an ICS technique applies before defaulting to an Enterprise technique. Include both if both characterize the behavior (e.g., `["T1190","T0839"]` for a network-reachable firmware service with a memory-corruption module-firmware primitive).
 
 ---
 

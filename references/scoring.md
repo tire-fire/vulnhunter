@@ -87,6 +87,17 @@ Set `severity` in the finding to the same label. These two values must be consis
 
 ---
 
+## Priority Score Scale: Two Distinct Uses
+
+`priority_score` appears in two different artifact types and is **not on the same scale** in both:
+
+- **`targets.json` queue entries** — the orchestrator's rank-ordering score. It is the product of the four weights above and therefore a number in [0, 1] (e.g., 0.80, 0.0875). Do not compare this against candidate scores.
+- **`candidate-*.json` files** — each chain agent's own severity/confidence hint, expressed on a 0–10 scale per the candidate schema (see `references/schemas/candidate.schema.json`). It is **not** the same formula; do not interpret it as a 0–1 weight product and do not compare it directly to a `targets.json` priority_score.
+
+These two values live on different artifacts with different scales. Comparing them directly produces meaningless results.
+
+---
+
 ## Notes on Consistency with Schemas
 
 - `priority_score` is stored as a JSON number in `targets.json` queue entries (`references/schemas/targets.schema.json`).
