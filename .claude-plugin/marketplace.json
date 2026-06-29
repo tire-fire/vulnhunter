@@ -1,5 +1,6 @@
 {
   "name": "vulnhunter",
+  "description": "Orchestrated reverse-engineering and vulnerability-hunting toolkit: firmware + live-target attack-surface enumeration, specialized analysis chains, finding validation, and bug-bounty reporting.",
   "owner": { "name": "Tirefire" },
   "plugins": [
     {
