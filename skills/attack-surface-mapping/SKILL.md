@@ -73,7 +73,9 @@ grep -rE "(password|passwd|secret|token|apikey)\s*[=:]\s*\S+" "$ROOTFS/etc" 2>/d
 For each ELF binary of interest (network daemons, setuid binaries), run the headless import and dump from `references/harnesses/pyghidra.md`:
 
 ```bash
-/opt/ghidra/support/analyzeHeadless ~/ghidra_projects vulnhunter \
+# Export GHIDRA_INSTALL_DIR before running; see references/harnesses/pyghidra.md.
+mkdir -p "$WS/ghidra-proj"
+"$GHIDRA_INSTALL_DIR/support/analyzeHeadless" "$WS/ghidra-proj" vulnhunter \
   -import "$BIN" \
   -analysisTimeoutPerFile 300 \
   -readOnly

@@ -4,9 +4,9 @@ Headless static reverse-engineering via PyGhidra and Ghidra's `analyzeHeadless`.
 
 ## Paths
 
-- PyGhidra wrapper: `~/.local/bin/pyghidra`
-- analyzeHeadless: `/opt/ghidra/support/analyzeHeadless`
-- Project store: `~/ghidra_projects`
+- PyGhidra CLI: `pyghidra` (on PATH)
+- analyzeHeadless: `$GHIDRA_INSTALL_DIR/support/analyzeHeadless` (export GHIDRA_INSTALL_DIR; see note below)
+- Project store: a fresh per-run directory (e.g. `$WS/ghidra-proj`)
 
 > **`GHIDRA_INSTALL_DIR` is required** by the `pyghidra` CLI and module — both
 > abort with "GHIDRA_INSTALL_DIR is not set" otherwise. Locate it once
@@ -20,11 +20,12 @@ Headless static reverse-engineering via PyGhidra and Ghidra's `analyzeHeadless`.
 ## Headless import and analysis
 
 ```bash
-PROJ=~/ghidra_projects
+# GHIDRA_INSTALL_DIR must be exported before running; see note above.
+mkdir -p "$WS/ghidra-proj"
 BIN=/path/to/target.elf
 
 # Import binary and run Ghidra auto-analysis (creates project on first run)
-/opt/ghidra/support/analyzeHeadless "$PROJ" vulnhunter \
+"$GHIDRA_INSTALL_DIR/support/analyzeHeadless" "$WS/ghidra-proj" vulnhunter \
   -import "$BIN" \
   -analysisTimeoutPerFile 300 \
   -readOnly
@@ -34,7 +35,7 @@ BIN=/path/to/target.elf
 
 ```python
 #!/usr/bin/env python3
-# Run with: ~/.local/bin/pyghidra dump_info.py /path/to/target.elf
+# Run with: pyghidra dump_info.py /path/to/target.elf
 import pyghidra
 import json, sys
 
@@ -78,7 +79,7 @@ with pyghidra.open_program(sys.argv[1]) as flat_api:
 
 ```python
 #!/usr/bin/env python3
-# Run with: ~/.local/bin/pyghidra find_sinks.py /path/to/target.elf
+# Run with: pyghidra find_sinks.py /path/to/target.elf
 import pyghidra, json, sys
 
 SINKS = {"strcpy", "strncpy", "memcpy", "memmove", "system", "sprintf", "snprintf", "popen", "gets"}

@@ -43,10 +43,11 @@ RADARE2_PRESENT=$(python3 -c "import json; d=json.load(open('capabilities.json')
 **With pyghidra** (per `references/harnesses/pyghidra.md`):
 
 ```bash
-PROJ=~/ghidra_projects
+# Export GHIDRA_INSTALL_DIR before running; see references/harnesses/pyghidra.md.
+mkdir -p "$WS/ghidra-proj"
 BIN="$ASSET_PATH"
 
-/opt/ghidra/support/analyzeHeadless "$PROJ" vulnhunter \
+"$GHIDRA_INSTALL_DIR/support/analyzeHeadless" "$WS/ghidra-proj" vulnhunter \
   -import "$BIN" \
   -analysisTimeoutPerFile 300 \
   -readOnly
