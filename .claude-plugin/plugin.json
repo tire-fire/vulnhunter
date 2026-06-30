@@ -1,6 +1,6 @@
 {
   "name": "vulnhunter",
   "description": "Orchestrated firmware + live-target vulnerability hunting: enumerate attack surface, prioritize, dispatch specialized chains, validate findings, write CWE/ATT&CK/CVSS-classified bug-bounty reports.",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "author": { "name": "Tirefire" }
 }
