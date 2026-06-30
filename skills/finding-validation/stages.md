@@ -68,7 +68,7 @@ Output schema: `references/schemas/finding.schema.json`
    - Attacker network position (internet, adjacent network, local, physical)
    - Authentication or authorization required (none, unprivileged account, admin account)
    - User interaction required (none, victim must open file, victim must click link)
-   - Non-default configuration or specific runtime state
+   - Non-default configuration or specific runtime state. When reachability hinges on whether a feature is enabled by default, resolve its default state from config-defaults shipped in the image — and check whether build/platform variants override that default (a feature off by default globally may be on for a specific variant).
 2. Cross-check preconditions against the engagement scope. If the required attacker position is explicitly out of scope, set `status: ruled_out`.
 3. Identify the attack chain: what sequence of inputs or requests reaches the vulnerable construct.
 4. Note any mitigations already in place (WAF, authentication, rate limiting) that must be bypassed.
@@ -96,6 +96,8 @@ Output schema: `references/schemas/finding.schema.json`
    ```
    scripts/sandbox.sh <workspace> -- <poc-command>
    ```
+   - **No live target?** A function-level PoC still produces observable evidence: emulate the actual firmware code on controlled inputs per `references/harnesses/firmware-fn-emulation.md` (qemu-user caller or pyghidra p-code). Proving the firmware routine maps input→output exactly as your exploit model assumes is a valid Stage-C observable effect for crypto/parser weaknesses.
+   - **No isolation backend** (bwrap absent + restricted user namespaces)? `sandbox.sh` refuses by default; for emulation of extracted code that does no network I/O, opt in with `SANDBOX_DEGRADED_OK=1 scripts/sandbox.sh …` (resource/wall limits still apply). Do not use degraded mode to detonate untrusted network-active code.
 4. Capture the output. Record the observable effect (crash signal and address, changed output diff, callback log, file read/write confirmation, or state change) as a string in the `evidence` array.
 5. If the PoC exits cleanly with no measurable difference from baseline, the POC-EVIDENCE gate is not satisfied. Refine the PoC or downgrade to `status: confirmed` if the path is traced but no trigger effect is achievable within engagement constraints.
 6. If no execution path from any entry point reaches the vulnerable construct, set `status: confirmed` (weakness is real, reachability unproven within scope).

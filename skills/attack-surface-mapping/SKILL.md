@@ -249,6 +249,8 @@ strings -n 6 "$BIN" | grep -E "(password|secret|token|http|socket|exec|system|/e
 
 Run the dump and sink-finder scripts from `references/harnesses/pyghidra.md` to produce imports, exports, function list, and dangerous-sink call sites. Attach sink findings to entry_points.
 
+For each listening service, determine whether it is **enabled by default or admin-gated** (from init scripts, systemd unit conditions, or any config-defaults shipped in the image) and record that on the entry_point, so reachability is not re-derived in later phases.
+
 **Step 4 — Populate attack-surface.json**
 
 ```python

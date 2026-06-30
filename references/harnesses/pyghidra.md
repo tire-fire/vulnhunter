@@ -8,6 +8,15 @@ Headless static reverse-engineering via PyGhidra and Ghidra's `analyzeHeadless`.
 - analyzeHeadless: `/opt/ghidra/support/analyzeHeadless`
 - Project store: `~/ghidra_projects`
 
+> **`GHIDRA_INSTALL_DIR` is required** by the `pyghidra` CLI and module — both
+> abort with "GHIDRA_INSTALL_DIR is not set" otherwise. Locate it once
+> (`find / -name ghidraRun -maxdepth 6 2>/dev/null`) and `export` it. CLI form
+> `pyghidra --skip-analysis <binary> <script.py>` runs the script with
+> `currentProgram`/`monitor` pre-bound (no `pyghidra.start()` call needed).
+
+> To **emulate a single exported function** — run real firmware bytes on chosen
+> inputs, hooking external PLT calls — see `firmware-fn-emulation.md`.
+
 ## Headless import and analysis
 
 ```bash
