@@ -4,15 +4,11 @@ Orchestrated firmware and live-target vulnerability hunting plugin for Claude Co
 
 ## Install
 
-Add the marketplace source:
+Clone the repository, add it as a local marketplace, and install the plugin:
 
 ```bash
-claude plugin marketplace add /home/tirefire/vulnhunter
-```
-
-Install the plugin:
-
-```bash
+git clone https://github.com/tire-fire/vulnhunter.git ~/vulnhunter
+claude plugin marketplace add ~/vulnhunter
 claude plugin install vulnhunter@vulnhunter
 ```
 
@@ -26,7 +22,7 @@ The orchestrator is invoked via the `attack-orchestrator` skill — ask Claude t
 
 Or invoke it directly in Claude Code via the Skill tool with the `attack-orchestrator` skill name. The engagement configuration drives all hunting phases: surface enumeration, prioritization, chain dispatch, validation, and report generation.
 
-**Note:** The `claude plugin marketplace add` path in the install section is an example. Replace `/home/tirefire/vulnhunter` with the actual path of your clone.
+**Note:** `~/vulnhunter` is just an example clone location — use whatever path you cloned into.
 
 ## Tooling
 
